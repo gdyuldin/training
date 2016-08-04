@@ -1,7 +1,8 @@
 import contextlib
 import shutil
 import tempfile
-import importlib
+
+from . import Exercise
 
 
 @contextlib.contextmanager
@@ -13,5 +14,5 @@ def clone_dir(source):
 
 
 def compose(module_name, **kwargs):
-    module = importlib.import_module('.' + module_name + '.prepare', __package__)
-    return module.compose(**kwargs)
+    exercise = Exercise(name=module_name)
+    return exercise.compose(**kwargs)

@@ -9,4 +9,4 @@ ADD . /opt/app
 
 VOLUME /var/run/docker.sock
 
-CMD ["./run.py"]
+CMD ["./runner.py"]

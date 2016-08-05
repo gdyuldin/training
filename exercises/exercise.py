@@ -13,11 +13,13 @@ class NotExists(Exception):
 class Exercise(object):
     """Base class for exercise"""
     BASE_DIR = os.path.dirname(__file__)
+    DEFAULT_IMAGE = 'images/pytest'
 
     def __init__(self, name):
         if not self._is_exercise(name):
             raise NotExists(name)
         self.name = name
+        self._prepare_module = None
 
     @classmethod
     def _is_exercise(cls, name):
@@ -28,6 +30,17 @@ class Exercise(object):
     @property
     def _exercise_dir(self):
         return os.path.join(self.BASE_DIR, self.name)
+
+    @property
+    def prepare_module(self):
+        if self._prepare_module is None:
+            self._prepare_module = importlib.import_module(
+                '.{0.name}.prepare'.format(self), __package__)
+        return self._prepare_module
+
+    @property
+    def image(self):
+        return getattr(self.prepare_module, 'IMAGE', self.DEFAULT_IMAGE)
 
     @property
     def __doc__(self):
@@ -51,6 +64,4 @@ class Exercise(object):
         return exercises
 
     def compose(self, **kwargs):
-        module = importlib.import_module('.{0.name}.prepare'.format(self),
-                                         __package__)
-        return module.compose(**kwargs)
+        return self.prepare_module.compose(**kwargs)

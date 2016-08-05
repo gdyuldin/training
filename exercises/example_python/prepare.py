@@ -12,3 +12,6 @@ def compose(answer):
         with open(os.path.join(tempdir, filename), 'w') as f:
             f.write(answer)
         yield tempdir
+
+
+IMAGE = 'images/pytest'

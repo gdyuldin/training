@@ -55,12 +55,13 @@ class Runner(object):
                 self.cli.kill(container)
             stdout = self.cli.logs(container, stderr=False)
             stderr = self.cli.logs(container, stdout=False)
-            exit_code = self.cli.inspect_container(container)['State']['ExitCode']
+            exit_code = self.cli.inspect_container(container)['State'][
+                'ExitCode']
         return exit_code, stdout, stderr
 
     def check_exercise(self, exercise, **kwargs):
         with exercise.compose(**kwargs) as temp_dir:
-            return self._run('images/pytest', extra_dirs=[temp_dir])
+            return self._run(exercise.image, extra_dirs=[temp_dir])
 
 
 if __name__ == '__main__':

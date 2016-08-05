@@ -1,5 +1,8 @@
+import contextlib
 import importlib
 import os
+
+from . import utils
 
 
 class NotExists(Exception):
@@ -19,28 +22,28 @@ class Exercise(object):
         if not self._is_exercise(name):
             raise NotExists(name)
         self.name = name
-        self._prepare_module = None
+        self._settings = None
 
     @classmethod
     def _is_exercise(cls, name):
-        """Check that exercise folder exists and contains `prepare.py`"""
+        """Check that exercise folder exists and contains `settings.py`"""
         path = os.path.join(cls.BASE_DIR, name)
-        return os.path.isdir(path) and 'prepare.py' in os.listdir(path)
+        return os.path.isdir(path) and 'settings.py' in os.listdir(path)
 
     @property
     def _exercise_dir(self):
         return os.path.join(self.BASE_DIR, self.name)
 
     @property
-    def prepare_module(self):
-        if self._prepare_module is None:
-            self._prepare_module = importlib.import_module(
-                '.{0.name}.prepare'.format(self), __package__)
-        return self._prepare_module
+    def settings(self):
+        if self._settings is None:
+            self._settings = importlib.import_module(
+                '.{0.name}.settings'.format(self), __package__)
+        return self._settings
 
     @property
     def image(self):
-        return getattr(self.prepare_module, 'IMAGE', self.DEFAULT_IMAGE)
+        return getattr(self.settings, 'IMAGE', self.DEFAULT_IMAGE)
 
     @property
     def __doc__(self):
@@ -52,16 +55,35 @@ class Exercise(object):
         with open(os.path.join(self._exercise_dir, f)) as f:
             return f.read()
 
+    @property
+    def answer_files(self):
+        return self.settings.ANSWERS
+
     @classmethod
     def list(cls):
         exercises = []
         for f in os.listdir(cls.BASE_DIR):
-            if not os.path.isdir(os.path.join(cls.BASE_DIR, f)):
-                continue
-            if 'prepare.py' in os.listdir(os.path.join(cls.BASE_DIR, f)):
+            if cls._is_exercise(f):
                 obj = cls(name=f)
                 exercises.append(obj)
         return exercises
 
-    def compose(self, **kwargs):
-        return self.prepare_module.compose(**kwargs)
+    @contextlib.contextmanager
+    def compose(self, data):
+        """Make temp workspace with user answer
+
+        Delete created workspace after exitin from contextmanager.
+
+        :param data: dict with files' names and they contents
+        :return: path to temp folder with prepared worspace
+        """
+        src_dir = self._exercise_dir
+        with utils.clone_dir(src_dir) as tempdir:
+            for answer_file in self.answer_files:
+                filename = answer_file['name']
+                content = data[filename]
+                path = os.path.join(tempdir, filename)
+                with open(path, 'w') as f:
+                    f.write(content)
+                os.chmod(path, answer_file.get('mode', 755))
+            yield tempdir

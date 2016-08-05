@@ -32,7 +32,7 @@ def test_exercise_wo_doc(example_sh):
 
 
 def test_prepare_module(example_python):
-    assert isinstance(example_python.prepare_module, types.ModuleType)
+    assert isinstance(example_python.settings, types.ModuleType)
 
 
 def test_image(example_python):
@@ -41,3 +41,8 @@ def test_image(example_python):
 
 def test_defaul_image(example_sh):
     assert example_sh.image == 'images/pytest'
+
+
+def test_answers_list(example_sh):
+    names = [x['name'] for x in example_sh.answer_files]
+    assert 'answer.sh' in names

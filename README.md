@@ -16,7 +16,7 @@
 
 1. Create new folder within `./exercises`
 2. Create `README.md` with exercise description
-3. Create `prepare.py` with `compose` function - this will prepare worspace for answer check
+3. Create `settings.py` and define some specific settings to exercise (if it need)
 4. Create `test_smth.py` file with tests to answer code
 5. Create your own `answer.py` within your exercise folder and fill it with your answer.py
 6. Run `py.test exercises/your_exercise` to check that your checks works

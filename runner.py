@@ -59,8 +59,14 @@ class Runner(object):
                 'ExitCode']
         return exit_code, stdout, stderr
 
-    def check_exercise(self, exercise, **kwargs):
-        with exercise.compose(**kwargs) as temp_dir:
+    def check_exercise(self, exercise, data):
+        """Check exercise with docker and return exit code, stout, stderr
+
+        :param exercise: exercise.Exercise instance
+        :param data: dict with files' names and they contents
+        :return: tuple (exit_code, stdout, stderr)
+        """
+        with exercise.compose(data) as temp_dir:
             return self._run(exercise.image, extra_dirs=[temp_dir])
 
 
@@ -78,7 +84,8 @@ def get_max(numbers):
     return ints and max(ints) or None
     """
     exercise = Exercise(name='example_python')
-    result = runner.check_exercise(exercise, answer=content)
+    data = {'answer.py': content}
+    result = runner.check_exercise(exercise, data)
 
     print(result[0])
     print(result[1].decode())

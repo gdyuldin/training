@@ -1,6 +1,6 @@
 FROM python:3.5
 
-RUN pip install pytest
+RUN pip install pytest coverage
 
 RUN mkdir /opt/sandbox
 

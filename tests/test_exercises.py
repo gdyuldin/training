@@ -1,5 +1,6 @@
 import types
 
+from hamcrest import only_contains, instance_of, assert_that, has_entries
 import pytest
 
 from exercises import Exercise
@@ -44,5 +45,12 @@ def test_defaul_image(example_sh):
 
 
 def test_answers_list(example_sh):
-    names = [x['name'] for x in example_sh.answer_files]
-    assert 'answer.sh' in names
+    assert 'answer.sh' in example_sh.answer_files
+
+
+def test_to_dict(example_python):
+    data = example_python.to_dict()
+    assert_that(data,
+                has_entries(name='example_python',
+                            doc=instance_of(str),
+                            answers=only_contains(instance_of(str))))

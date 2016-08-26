@@ -3,14 +3,7 @@ import importlib
 import os
 
 from . import utils
-
-
-class NotExists(Exception):
-    def __init__(self, name):
-        self.name = name
-
-    def __str__(self):
-        return "Exercise with name={0.name} not found".format(self)
+from . import exceptions
 
 
 class Exercise(object):
@@ -20,7 +13,7 @@ class Exercise(object):
 
     def __init__(self, name):
         if not self._is_exercise(name):
-            raise NotExists(name)
+            raise exceptions.NotExists(name)
         self.name = name
         self._settings = None
 
@@ -56,8 +49,19 @@ class Exercise(object):
             return f.read()
 
     @property
-    def answer_files(self):
+    def _answer_data(self):
         return self.settings.ANSWERS
+
+    @property
+    def answer_files(self):
+        return [x['name'] for x in self._answer_data]
+
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'doc': self.__doc__,
+            'answers': self.answer_files
+        }
 
     @classmethod
     def list(cls):
@@ -79,11 +83,12 @@ class Exercise(object):
         """
         src_dir = self._exercise_dir
         with utils.clone_dir(src_dir) as tempdir:
-            for answer_file in self.answer_files:
-                filename = answer_file['name']
+            for file_info in self._answer_data:
+                filename = file_info['name']
                 content = data[filename]
                 path = os.path.join(tempdir, filename)
                 with open(path, 'w') as f:
                     f.write(content)
-                os.chmod(path, answer_file.get('mode', 755))
+                mode = file_info.get('mode', '755')
+                os.chmod(path, int(mode, 8))
             yield tempdir

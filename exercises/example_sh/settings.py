@@ -1,4 +1,4 @@
 ANSWERS = [{
     'name': 'answer.sh',
-    'mode': 755
+    'mode': '755'
 }]

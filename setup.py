@@ -18,7 +18,12 @@ def read_version():
             raise RuntimeError(msg)
 
 
-install_requires = ['aiohttp', 'pyyaml', 'docker-py', 'pytest-runner']
+# Temporary solution
+import pip
+pip.main(['install', 'git+https://github.com/gdyuldin/asyncio-docker'])
+
+install_requires = ['aiohttp', 'pyyaml', 'asyncio-redis', 'dpath',
+                    'pytest-runner']
 tests_require = ['pytest', 'pyhamcrest', 'pytest-asyncio']
 
 setup(

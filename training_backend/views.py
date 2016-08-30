@@ -1,5 +1,5 @@
-import uuid
 import json
+import uuid
 
 from aiohttp import web
 import exercises
@@ -21,7 +21,8 @@ async def check_exercise(request):
         if name not in payload:
             raise web.HTTPBadRequest
     runner = exercises.utils.Runner()
-    container_id = runner.start_exercise_checking(ex, payload)
+    with runner.open_session():
+        container_id = await runner.start_exercise_checking(ex, payload)
     taks_id = str(uuid.uuid4())
     await request.app['redis'].set(taks_id, json.dumps({
         'container_id': container_id,
@@ -39,7 +40,8 @@ async def get_result(request):
     if 'check_result' in task_info:
         result = task_info
     else:
-        task_status = runner.get_results(task_info['container_id'])
+        with runner.open_session():
+            task_status = await runner.get_results(task_info['container_id'])
         if task_status is not None:
             exit_code, stdout, stderr = task_status
             result = {

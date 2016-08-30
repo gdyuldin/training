@@ -15,7 +15,7 @@ def create_app(event_loop, unused_tcp_port):
     async def create():
         nonlocal app, handler, srv, client_session
         import training_backend.main
-        app, _, _ = await training_backend.main.init(event_loop)
+        app, _, _ = await training_backend.main.init(event_loop, debug=True)
         handler = app.make_handler(debug=True, keep_alive_on=False)
         srv = await event_loop.create_server(handler, '127.0.0.1',
                                              unused_tcp_port)

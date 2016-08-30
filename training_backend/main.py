@@ -2,7 +2,6 @@ import asyncio
 import logging
 import pathlib
 
-
 from aiohttp import web
 import asyncio_redis
 
@@ -22,12 +21,29 @@ async def close_redis(app):
     app['redis'].close()
 
 
-async def init(loop):
+async def init_redis(conf):
+    connection = await asyncio_redis.Pool.create(
+        host=conf['redis']['host'],
+        port=int(conf['redis']['port']),
+        poolsize=int(conf['redis']['poolsize']))
+    return connection
+
+async def close_redis(app):
+    app['redis'].close()
+
+
+async def init(loop, debug=False):
     # load config from yaml file in current dir
     conf = load_config(str(PROJ_ROOT / 'config' / 'settings.yaml'))
 
     # setup application and extensions
-    app = web.Application(loop=loop)
+    app = web.Application(loop=loop, debug=debug)
+
+    # setup redis
+    redis = await init_redis(conf)
+    app['redis'] = redis
+
+    app.on_cleanup.append(close_redis)
 
     # setup redis
     redis = await init_redis(conf)

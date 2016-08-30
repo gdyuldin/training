@@ -1,5 +1,6 @@
 from .views import exercises_list
 from .views import check_exercise
+from .views import get_result
 
 
 def setup_routes(app):
@@ -8,3 +9,4 @@ def setup_routes(app):
                          '/exercises/{name}',
                          check_exercise,
                          name='check_exercise')
+    app.router.add_route('GET', '/results/{uuid}', get_result)

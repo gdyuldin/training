@@ -4,11 +4,22 @@ import pathlib
 
 
 from aiohttp import web
+import asyncio_redis
 
 from .routes import setup_routes
 from .utils import load_config
 
 PROJ_ROOT = pathlib.Path(__file__).parent
+
+async def init_redis(conf):
+    connection = await asyncio_redis.Pool.create(
+        host=conf['redis']['host'],
+        port=int(conf['redis']['port']),
+        poolsize=int(conf['redis']['poolsize']))
+    return connection
+
+async def close_redis(app):
+    app['redis'].close()
 
 
 async def init(loop):
@@ -17,6 +28,12 @@ async def init(loop):
 
     # setup application and extensions
     app = web.Application(loop=loop)
+
+    # setup redis
+    redis = await init_redis(conf)
+    app['redis'] = redis
+
+    app.on_cleanup.append(close_redis)
 
     # setup views and routes
     setup_routes(app)

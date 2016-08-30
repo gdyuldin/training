@@ -43,36 +43,41 @@ class Runner(object):
         buf.seek(0)
         self.cli.put_archive(container, path, buf.read())
 
-    @contextlib.contextmanager
     def _create_container(self, image_name, extra_dirs=()):
         image_data = self.cli.inspect_image(image_name)
 
         container = self.cli.create_container(image_name)
         container_workdir = image_data['Config']['WorkingDir']
         self._put_data(container, container_workdir, extra_dirs)
-        yield container
-        self.cli.remove_container(container=container['Id'], force=True)
+        return container
 
-    def _run(self, image_path, extra_dirs):
+    def _remove_container(self, container_id):
+        self.cli.remove_container(container=container_id, force=True)
+
+    def _start(self, image_path, extra_dirs):
         image_name = self._build_image(image_path)
-        with self._create_container(image_name, extra_dirs) as container:
-            self.cli.start(container)
-            try:
-                self.cli.wait(container, timeout=10 * 60)
-            except requests.exceptions.ReadTimeout:
-                self.cli.kill(container)
-            stdout = self.cli.logs(container, stderr=False)
-            stderr = self.cli.logs(container, stdout=False)
-            exit_code = self.cli.inspect_container(container)['State'][
-                'ExitCode']
-        return exit_code, stdout, stderr
+        container = self._create_container(image_name, extra_dirs)
+        self.cli.start(container)
+        return container['Id']
 
-    def check_exercise(self, exercise, data):
-        """Check exercise with docker and return exit code, stout, stderr
+    def start_exercise_checking(self, exercise, data):
+        """Check exercise with docker and return container_id
 
         :param exercise: exercise.Exercise instance
         :param data: dict with files' names and they contents
-        :return: tuple (exit_code, stdout, stderr)
+        :return: string (container_id)
         """
         with exercise.compose(data) as temp_dir:
-            return self._run(exercise.image, extra_dirs=[temp_dir])
+            return self._start(exercise.image, extra_dirs=[temp_dir])
+
+    def get_results(self, container_id, timeout=1):
+        try:
+            self.cli.wait(container_id, timeout=timeout)
+        except requests.exceptions.ReadTimeout:
+            return
+        stdout = self.cli.logs(container_id, stderr=False)
+        stderr = self.cli.logs(container_id, stdout=False)
+        exit_code = self.cli.inspect_container(container_id)['State'][
+            'ExitCode']
+        self._remove_container(container_id)
+        return exit_code, stdout, stderr

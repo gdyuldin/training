@@ -4,3 +4,10 @@ backend:
     - /var/run/docker.sock:/var/run/docker.sock
   ports:
     - 8000:8000
+  links:
+    - redis_storage:redis_storage
+  environment:
+    - "REDIS_HOST=redis_storage"
+redis_storage:
+  image: redis:latest
+

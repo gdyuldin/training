@@ -4,7 +4,8 @@
 
 * Install Docker, docker-compose
 * Run `docker-compose up -d`
-* Check with `curl -i -X POST -H "Content-Type: application/json" -d '{"answer.py": "get_max = lambda x: x[0]"}' http://localhost:8000/exercises/example_python`
+* Start check with `curl -i -X POST -H "Content-Type: application/json" -d '{"answer.py": "get_max = lambda x: x[0]"}' http://localhost:8000/exercises/example_python`
+* Check result with `curl -i -X GET http://localhost:8000/results/<uuid>`
 
 ## Exercise check steps
 
@@ -66,9 +67,9 @@ Response example:
 }
 ```
 
-### Check exercises
+### Start exercise checking
 
-Check exercise and returns result
+Start exercise checking and return task uuid
 
 <dl>
     <dt>Path</dt>
@@ -84,13 +85,35 @@ Request example:
 
 Response example:
 ```json
+{"id": "2643b8b7-f2bc-4a55-bdbf-c2962d1fef4d"}
+```
+
+### Get checking result
+
+Start exercise checking and return task uuid
+
+<dl>
+    <dt>Path</dt>
+    <dd><code>/results/&lt; uuid &gt;</code></dd>
+    <dt>Method</dt>
+    <dd><code>GET</code></dd>
+</dl>
+
+Response example:
+```json
 {
+    "exercise": "example_python",
     "check_result": {
         "exit_code": 0,
         "stdout": "All tests passed",
         "stderr": ""
     }
 }
+```
+
+Not ready response example:
+```json
+{"error": {"message": "Checking in progress"}}
 ```
 
 ## Testing

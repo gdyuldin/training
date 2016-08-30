@@ -18,15 +18,15 @@ def read_version():
             raise RuntimeError(msg)
 
 
-install_requires = ['aiohttp', 'pyyaml', 'docker-py', 'pytest-runner']
+install_requires = ['aiohttp', 'pyyaml', 'docker-py', 'asyncio-redis', 'dpath',
+                    'pytest-runner']
 tests_require = ['pytest', 'pyhamcrest', 'pytest-asyncio']
 
-setup(
-    name='training_backend',
-    version=read_version(),
-    description='Education portal trainig backend',
-    platforms=['POSIX'],
-    packages=find_packages(),
-    install_requires=install_requires,
-    tests_require=tests_require,
-    zip_safe=False)
+setup(name='training_backend',
+      version=read_version(),
+      description='Education portal trainig backend',
+      platforms=['POSIX'],
+      packages=find_packages(),
+      install_requires=install_requires,
+      tests_require=tests_require,
+      zip_safe=False)

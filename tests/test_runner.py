@@ -67,36 +67,37 @@ def test_build_image_with_tag(runner, image_path):
 
 
 def test_create_container(runner):
-    with runner._create_container('busybox') as container:
-        assert_that(container, has_entries('Id', instance_of(str)))
-
-
-def test_delete_container_after_exiting(runner):
-    with runner._create_container('busybox') as container:
-        container_id = container['Id']
-    assert len(runner.cli.containers(filters={'id': container_id})) == 0
+    container = runner._create_container('busybox')
+    assert_that(container, has_entries('Id', instance_of(str)))
 
 
 def test_create_container_with_data(runner, extra_dir, image):
-    with runner._create_container(image, [str(extra_dir)]) as container:
-        runner.cli.start(container=container.get('Id'))
-        stdout = runner.cli.logs(container, stderr=False)
-        stderr = runner.cli.logs(container, stdout=False)
+    container = runner._create_container(image, [str(extra_dir)])
+    runner.cli.start(container=container.get('Id'))
+    stdout = runner.cli.logs(container, stderr=False)
+    stderr = runner.cli.logs(container, stdout=False)
     assert b"sub/hello.txt" in stdout
     assert len(stderr) == 0
 
 
 def test_run(runner, image_path, extra_dir):
-    exit_code, stdout, stderr = runner._run(image_path,
-                                            extra_dirs=[str(extra_dir)])
+    container_id = runner._start(image_path, extra_dirs=[str(extra_dir)])
+    assert_that(container_id, instance_of(str))
+
+
+def test_start_exercise_checking(runner):
+    ex = Exercise('example_python')
+    data = {'answer.py': 'get_max = lambda x: x[0]'}
+    container_id = runner.start_exercise_checking(ex, data)
+    assert container_id is not None
+
+
+def test_get_result(runner):
+    ex = Exercise('example_python')
+    data = {'answer.py': 'get_max = lambda x: x[0]'}
+    container_id = runner.start_exercise_checking(ex, data)
+    exit_code, stdout, stderr = runner.get_results(container_id, timeout=30)
     assert_that(exit_code, instance_of(int))
     assert_that(stdout, instance_of(bytes))
     assert_that(stderr, instance_of(bytes))
-
-
-def test_check_exercise(runner):
-    ex = Exercise('example_python')
-    data = {'answer.py': 'get_max = lambda x: x[0]'}
-    exit_code, stdout, stderr = runner.check_exercise(ex, data)
-    assert exit_code != 0
-    assert b'failed' in stdout
+    assert len(runner.cli.containers(filters={'id': container_id})) == 0

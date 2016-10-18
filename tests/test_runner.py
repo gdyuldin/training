@@ -47,14 +47,17 @@ def clean_docker(runner, event_loop):
 
     yield
 
-    new_images_tags, new_container_ids = event_loop.run_until_complete(inspect())
+    (new_images_tags,
+     new_container_ids) = event_loop.run_until_complete(inspect())
 
     async def cleanup(ids, class_name):
         for _id in ids:
             await getattr(runner.api, class_name)(_id).remove(force=True)
 
-    event_loop.run_until_complete(cleanup(new_container_ids - container_ids, 'Container'))
-    event_loop.run_until_complete(cleanup(new_images_tags - images_tags, 'Image'))
+    event_loop.run_until_complete(cleanup(new_container_ids - container_ids,
+                                          'Container'))
+    event_loop.run_until_complete(cleanup(new_images_tags - images_tags,
+                                          'Image'))
 
 
 @pytest.mark.asyncio
@@ -123,7 +126,8 @@ async def test_get_result(runner):
     ex = Exercise('example_python')
     data = {'answer.py': 'get_max = lambda x: x[0]'}
     container_id = await runner.start_exercise_checking(ex, data)
-    exit_code, stdout, stderr = await runner.get_results(container_id, timeout=30)
+    exit_code, stdout, stderr = await runner.get_results(container_id,
+                                                         timeout=30)
     assert_that(exit_code, instance_of(int))
     assert_that(stdout, instance_of(bytes))
     assert_that(stderr, instance_of(bytes))

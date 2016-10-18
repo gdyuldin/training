@@ -21,17 +21,6 @@ async def close_redis(app):
     app['redis'].close()
 
 
-async def init_redis(conf):
-    connection = await asyncio_redis.Pool.create(
-        host=conf['redis']['host'],
-        port=int(conf['redis']['port']),
-        poolsize=int(conf['redis']['poolsize']))
-    return connection
-
-async def close_redis(app):
-    app['redis'].close()
-
-
 async def init(loop, debug=False):
     # load config from yaml file in current dir
     conf = load_config(str(PROJ_ROOT / 'config' / 'settings.yaml'))

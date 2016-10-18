@@ -19,7 +19,7 @@ def read_version():
 
 
 # Temporary solution
-import pip
+import pip  # noqa
 pip.main(['install', 'git+https://github.com/gdyuldin/asyncio-docker'])
 
 install_requires = ['aiohttp', 'pyyaml', 'asyncio-redis', 'dpath',

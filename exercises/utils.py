@@ -90,7 +90,8 @@ class Runner(object):
         :return: string (container_id)
         """
         with exercise.compose(data) as temp_dir:
-            container_id = await self._start(exercise.image, extra_dirs=[temp_dir])
+            container_id = await self._start(exercise.image,
+                                             extra_dirs=[temp_dir])
             return container_id
 
     async def get_results(self, container_id, timeout=1):
